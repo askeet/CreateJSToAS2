@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AS2ToAS3_Canvas</title>
+<!-- write your code here -->
+
+
+<script src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
+<script src="AS2ToAS3_Canvas.js"></script>
+<script src="Lib\AS2_Library.js"></script>
+<script>
+var canvas, stage, exportRoot;
+function init() {
+	// --- write your JS code here ---
+	
+	canvas = document.getElementById("canvas");
+	exportRoot = new lib.AS2ToAS3_Canvas();
+
+	stage = new createjs.Stage(canvas);
+	stage.addChild(exportRoot);
+	stage.update();
+
+	createjs.Ticker.setFPS(lib.properties.fps);
+	createjs.Ticker.addEventListener("tick", stage);
+	InitAS2();
+	Init();
+}
+
+function Init(){
+	var _root = exportRoot;
+    trace("example 1 Drawing");
+	_root.createEmptyMovieClip("line_mc", 1);
+	with(_root.line_mc){
+		lineStyle(10, 0xFF0000, 100);
+		moveTo(0, 0);
+		lineTo(150, 0);
+		lineTo(150, 50);
+		lineTo(0, 50);
+		lineTo(0, 0);
+		_x=150;
+		_y=150;
+	}
+	
+	trace("example 2 Text");
+	eval('line_mc').createTextField("MyText", undefined, 10, 10);
+	eval('line_mc.MyText').text = 'Hello Word';
+	//example 3 attachMovie from Library Adobe Animate
+	_root.attachMovie("LibMovie","Movie2",undefined).x = 200;
+	trace("example 3 duplicateMovieClip (this version doesn't copy all childrens)");
+	//example 3 duplicateMovieClip (this version doesn't copy all childrens)
+	eval('line_mc').duplicateMovieClip("NewMovie")._x = 100;
+	_root.NewMovie._y = 30;
+	
+	trace("example 4 remove any MovieClip or Text");
+	eval('line_mc.MyText').removeObject();
+	eval('Movie1').removeObject();
+	
+
+
+
+}
+
+
+</script>
+
+<!-- write your code here -->
+
+</head>
+<body onload="init();" style="background-color:#D4D4D4;margin:0px;">
+	<canvas id="canvas" width="550" height="400" style="background-color:#FFFFFF"></canvas>
+</body>
+</html>

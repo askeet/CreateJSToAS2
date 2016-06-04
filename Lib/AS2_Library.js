@@ -281,9 +281,6 @@ var lineStyle = createjs.DisplayObject.prototype.lineStyle = function (thickness
 		var color = createjs.Graphics.getRGB(rgb, alpha);	
 		Shape.graphics.beginStroke(color);
 	}
-    //this.graphics.moveTo(0,0);
-    //this.graphics.lineTo(300,300);
-    //this.graphics.endStroke();
 }
 
 //my_mc.beginFill([rgb:Number[, alpha:Number]]) : Void
@@ -301,20 +298,29 @@ var endFill = createjs.DisplayObject.prototype.endFill = function (rgb,alpha){
 var clear = createjs.DisplayObject.prototype.clear = function (){ 
 	GetShape(this).graphics.clear();
 }
-
-Object.defineProperty(createjs.DisplayObject.prototype, '_x', {
-		get: function(){ return this.x; },
-		set: function (CoordX){ this.x = CoordX; },
+// Property
+function  AddNewProperty(CurNameProperty,NewNameProperty, Class ){
+	if(Class == undefined) Class = createjs.DisplayObject.prototype;
+	Object.defineProperty(Class, NewNameProperty, {
+		get: function(){ return this[CurNameProperty] ; },
+		set: function (value){ this[CurNameProperty] = value; },
 		enumerable: true,
 		configurable: true
-});
+    });	
+}
+AddNewProperty('alpha','_alpha');
+AddNewProperty('x','_x');
+AddNewProperty('y','_y');
+AddNewProperty('rotation','_rotation');
+//AddNewProperty('width','_width');
+//AddNewProperty('height','_height');
+AddNewProperty('xscale','_xscale');
+AddNewProperty('yscale','_yscale');
+AddNewProperty('parrent','_parrent');
+AddNewProperty('visible','_visible');
+AddNewProperty('currentFrame','_currentframe',createjs.MovieClip.prototype); 
 
-Object.defineProperty(createjs.DisplayObject.prototype, '_y', {
-		get: function(){ return this.y; },
-		set: function (CoordY){ this.y = CoordY; },
-		enumerable: true,
-		configurable: true
-});
+
 
 
 

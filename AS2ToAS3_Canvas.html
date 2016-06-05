@@ -29,6 +29,7 @@ function init() {
 
 function Init(){
 	var _root = exportRoot;
+	
     trace("example 1 Drawing");
 	_root.createEmptyMovieClip("line_mc", 1);
 	with(_root.line_mc){
@@ -45,22 +46,23 @@ function Init(){
 	trace("example 2 Text");
 	eval('line_mc').createTextField("MyText", undefined, 10, 10);
 	eval('line_mc.MyText').text = 'Hello Word';
-	//example 3 attachMovie from Library Adobe Animate
-	_root.attachMovie("LibMovie","Movie2",undefined).x = 200;
+	trace('example 3 attachMovie from Library Adobe Animate');
+	_root.attachMovie("LibMovie","Movie2",undefined).x = 250;
+	_root.Movie2.y = 100;
 	trace("example 3 duplicateMovieClip (this version doesn't copy all childrens)");
-	//example 3 duplicateMovieClip (this version doesn't copy all childrens)
-	eval('line_mc').duplicateMovieClip("NewMovie")._x = 100;
-	_root.NewMovie._y = 30;
-	
+	eval('line_mc').duplicateMovieClip("copy_line_mc")._x = 100;	
+	_root.copy_line_mc._y = 30;
+	_root.Movie2.gotoAndStop(1);
+	eval('Movie2').duplicateMovieClip("copy_Movie2");	
+	_root.copy_Movie2._x = 0;
+
 	trace("example 4 remove any MovieClip or Text");
 	eval('line_mc.MyText').removeObject();
 	eval('Movie1').removeObject();
 	
-	trace("example 5  Get currentFrame for MovieClip (1 Frame == 0)");
-	trace(eval('Movie2').name +" " + eval('Movie2')._currentframe);
-	
-
-
+	trace("example 5  Set width and height for MovieClip");
+	eval('Movie2')._width = 40;
+	eval('copy_Movie2')._height = 40;
 
 }
 

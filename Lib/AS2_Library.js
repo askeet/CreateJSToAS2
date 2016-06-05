@@ -201,8 +201,10 @@ var attachMovie = createjs.DisplayObject.prototype.attachMovie = function (idNam
 	var FindName = this.GetAbsolutePath();
 	FindName = (FindName != "") ? FindName + "." + newName : newName;
 
-	var classDefintion = lib[idName]; //stage.getDefinitionByName( idName );
+	var classDefintion = (idName)?lib[idName]:this.constructor; 
+	if(!classDefintion) classDefintion = this.constructor;
 	var instance = new classDefintion();
+	instance.idName = idName;
 	instance.name = newName;
 	if (initObject)
 		for (var key in initObject)
@@ -222,7 +224,16 @@ var attachMovie = createjs.DisplayObject.prototype.attachMovie = function (idNam
 
 var duplicateMovieClip = createjs.DisplayObject.prototype.duplicateMovieClip = function (newname, depth ,initObject){
 	var path = (this.parent) ? this.parent : this;
-	var cm = path.createEmptyMovieClip(newname, depth ,initObject);
+	var cm;
+	if(this.idName){
+		cm = path.attachMovie(this.idName,newname,depth,initObject);
+		if(this.paused);
+			cm.gotoAndStop(this.currentFrame);
+		cm.x = this.x;
+		cm.y = this.y;
+	}
+	else
+		cm = path.createEmptyMovieClip(newname, depth ,initObject);
 	var Shape =  this.UserShape;
     if(Shape){  
 		cm.UserShape = Shape.clone(true);
@@ -234,15 +245,6 @@ var duplicateMovieClip = createjs.DisplayObject.prototype.duplicateMovieClip = f
 
 function trace(Value){
 	console.log(Value);
-}
-
-var addProperty = createjs.DisplayObject.prototype.addProperty = function (NameProperty, GetStatus, SetStatus){
-	Object.defineProperty(this, NameProperty, {
-		get: GetStatus,
-		set: SetStatus,
-		enumerable: true,
-		configurable: true
-	});	
 }
 
 function GetShape(Value){
@@ -299,29 +301,80 @@ var clear = createjs.DisplayObject.prototype.clear = function (){
 	GetShape(this).graphics.clear();
 }
 // Property
-function  AddNewProperty(CurNameProperty,NewNameProperty, Class ){
+function  AddNewProperty(CurNameProperty,NewNameProperty, Class, funcGet,funcSet ){
 	if(Class == undefined) Class = createjs.DisplayObject.prototype;
 	Object.defineProperty(Class, NewNameProperty, {
-		get: function(){ return this[CurNameProperty] ; },
-		set: function (value){ this[CurNameProperty] = value; },
+		get: (!funcGet)? function(){ return (CurNameProperty)? this[CurNameProperty] : undefined; }      : funcGet,
+		set: (!funcSet)? function (value){ if(CurNameProperty)this[CurNameProperty] = value; }: funcSet,
 		enumerable: true,
 		configurable: true
     });	
 }
+
+var addProperty = createjs.DisplayObject.prototype.addProperty = function (NameProperty, GetStatus, SetStatus){
+	AddNewProperty(undefined,NameProperty,this,GetStatus,SetStatus);
+	/*Object.defineProperty(this, NameProperty, {
+		get: GetStatus,
+		set: SetStatus,
+		enumerable: true,
+		configurable: true
+	});	*/
+}
+
 AddNewProperty('alpha','_alpha');
 AddNewProperty('x','_x');
 AddNewProperty('y','_y');
 AddNewProperty('rotation','_rotation');
-//AddNewProperty('width','_width');
-//AddNewProperty('height','_height');
 AddNewProperty('xscale','_xscale');
 AddNewProperty('yscale','_yscale');
 AddNewProperty('parrent','_parrent');
 AddNewProperty('visible','_visible');
 AddNewProperty('currentFrame','_currentframe',createjs.MovieClip.prototype); 
 
+AddNewProperty(undefined,"_width", undefined, 
+	function(){ 
+		if(this.getTransformedBounds){
+			var bounds = this.getTransformedBounds(); 
+			if(bounds) return bounds.width;
+			else{
+				if(this.currentFrame == 0 && this.nominalBounds)
+					return this.nominalBounds.width;
+			}			
+			return undefined;
+		}
+	},
+	function(value){
+		if(this.getTransformedBounds){
+			var bounds = this.getTransformedBounds(); 
+			if(bounds){
+				this.setTransform(bounds.x,bounds.y,value/bounds.width,1);
+			}
+		}	
+	}
+	
+);
 
-
+AddNewProperty(undefined,"_height", undefined, 
+	function(){ 
+		if(this.getTransformedBounds){
+			var bounds = this.getTransformedBounds(); 
+			if(bounds) return bounds.height;
+			else{
+				if(this.currentFrame == 0 && this.nominalBounds)
+					return this.nominalBounds.height;
+			} 			
+			return undefined;
+		}		
+	},
+	function(value){
+		if(this.getTransformedBounds){
+			var bounds = this.getTransformedBounds(); 
+			if(bounds){
+				this.setTransform(bounds.x,bounds.y,1,value/bounds.height);
+			}
+		}	
+	} 
+);
 
 
 function Test(){	

@@ -22,14 +22,41 @@
 * OTHER DEALINGS IN THE SOFTWARE.
 */
 
-
-
 var _root;
 function InitAS2() {
 	SetDefaultNames();
 	_root = exportRoot;
 	Test();
 }
+
+var isStop = false;
+function SetFPS(value){
+
+	if(value ===0){ 
+	    if(!isStop){
+			createjs.Ticker.removeEventListener("tick", stage);
+			isStop = true;
+			UpdatePaint();
+		}
+	}
+	else{
+		createjs.Ticker.setFPS(value);
+	    if(isStop){
+			createjs.Ticker.addEventListener("tick", stage);
+			isStop = false;
+		}
+	}
+}
+
+function UpdatePaint(){
+   if(isStop){ 
+        var event1 = new Object();
+	event1.paused = false;
+	handleTick(event1); 
+   }
+   stage.update();   
+}
+
 // Library AS2
 
 function SetDefaultNames() {
@@ -53,55 +80,85 @@ function SetDefaultNames() {
 	}
 }
 
+function fscommand(arg,command){
+	if(window.external!=null &&  typeof window.external.EventForFSCommand!=='undefined')
+		window.external.EventForFSCommand(arg,command);
+}
+
 var arrChildByName = [];
 function eval(Value) {
-	//trace(arrChildByName[Value]);
-	var Obj = null;
-	arr = Value.split(".");
-	if (arr.length === 1) {
-		if (!arrChildByName[Value]) {
-			Obj = _root.getChildByName(Value);
-			if (!Obj) {				
-				Obj = _root[Value];
-			}else{
-				_root[Value] = Obj;
-			}
-		} else {			
-			Obj = arrChildByName[Value];
+	var object = GetValue(Value);
+	if(object) arrChildByName[Value] = object;
+	return object;
+}
+
+function SetValue( nameProperty ,  value , isGotoAndStop ){
+        nameProperty = nameProperty.replace( "_root.",'');
+	arr = nameProperty.split(".");
+	var object = null;
+
+	for (var i = 0; i < arr.length-1; i++) {
+	    if(i===0)
+		object = _root[arr[0]];
+	    else
+		if(object)				
+			object = object[arr[i]];                				
 		}
-	} else {
-		if (!arrChildByName[Value]) {
-
-			Obj = (!arrChildByName[arr[0]]) ? _root.getChildByName(arr[0]) : arrChildByName[arr[0]];
-			
-
-			if (!Obj) {
-				Obj = _root[arr[0]];
-			}else{
-			   _root[arr[0]] = Obj;	
-			}
-						
-			for (var i = 1; i < arr.length; i++) {
-				if (Obj != null) {
-					var Obj_Temp = Obj.getChildByName(arr[i]);
-
-					if (!Obj_Temp) {
-						Obj = Obj[arr[i]];
-						if (!Obj)
-							break;
-					} else {
-						Obj[arr[i]] = Obj_Temp;
-						Obj = Obj_Temp;
-					}
-				}
-			}
-		} else {
-			Obj = arrChildByName[Value];
+	if(arr.length > 1 && object ){
+		if(!isGotoAndStop){
+			object[ arr[arr.length-1]] = value;
+		}else{
+			object[ arr[arr.length-1]].gotoAndStop(value);
 		}
 	}
-	if (Obj)
-		arrChildByName[Value] = Obj;
-	return Obj;
+	else{
+		if(arr.length === 1){
+		    if(!isGotoAndStop){	
+				_root[arr[0]] = value;
+		    }else{
+				_root[arr[0]].gotoAndStop(value);
+		    }
+		}
+	}
+}
+
+
+function GetValue( nameProperty){
+    nameProperty = nameProperty.replace( "_root.",'');
+    arr = nameProperty.split(".");
+	var object = null;
+
+	for (var i = 0; i < arr.length; i++) {
+	    if(i===0){
+		object = _root[arr[0]];
+	    	if(!object){  
+			object = _root.getChildByName(arr[0]); 
+			if(object){
+				_root[arr[0]] = object;
+				//object[arr[0]] = object;
+			}else{											
+				break;
+			}						
+		}
+	      }
+    	      else
+		if(object){				
+			var obj = object[arr[i]];
+			if(!obj){ // not find  
+				obj = object.getChildByName(arr[i]);
+			}
+
+			if(obj){
+				object[arr[i]] = obj;
+				object = obj;
+			}else{	
+				object = undefined;						 
+				break;	
+			}
+		}					
+	}
+
+	return (arr.length > 0 && object )? object : undefined;
 }
 
 var removeObject = createjs.DisplayObject.prototype.removeObject = function () {

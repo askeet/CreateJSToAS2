@@ -24,8 +24,8 @@
 
 var _root;
 function InitAS2() {
-	SetDefaultNames();
 	_root = exportRoot;
+	SetDefaultNames();	
 	Test();
 }
 
